@@ -11,6 +11,8 @@ const ExpressError=require("./utils/ExpressError");
 const {listingSchema,reviewSchema}=require("./schema")
 const listings= require("./routes/listing");
 const reviews= require("./routes/review");
+var session = require('express-session');
+const flash = require('connect-flash');
 
 
 main().then(()=>{
@@ -32,6 +34,26 @@ app.use(express.static(path.join(__dirname,"/public")));
 
 app.get("/",(req,res)=>{
     res.send("Hi, I'm root");
+})
+
+const sessionOptions={
+     secret: "mysupersecretstring", 
+     resave: false, 
+     saveUninitialized: true, 
+     cookie:{
+        expires:Date.now()+7*24*60*60*1000,
+        maxAge:7*24*60*60*1000,
+        httpOnly:true
+     }
+      };
+
+app.use(session(sessionOptions));
+app.use(flash());
+
+app.use((req,res,next)=>{
+    res.locals.success=req.flash("success");
+    res.locals.error=req.flash("error");
+    next();
 })
 
 
