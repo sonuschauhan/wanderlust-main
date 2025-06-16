@@ -9,10 +9,18 @@ const ejsMate=require("ejs-mate");
 const wrapAsync =require("./utils/wrapAsync");
 const ExpressError=require("./utils/ExpressError");
 const {listingSchema,reviewSchema}=require("./schema")
-const listings= require("./routes/listing");
-const reviews= require("./routes/review");
-var session = require('express-session');
+
+const session = require('express-session');
 const flash = require('connect-flash');
+const passport=require("passport");
+const LocalStrategy =require("passport-local");
+const User=require("./models/user");
+
+const listingRouter= require("./routes/listing");
+const reviewRouter= require("./routes/review");
+const userRouter=require("./routes/user")
+
+
 
 
 main().then(()=>{
@@ -50,18 +58,39 @@ const sessionOptions={
 app.use(session(sessionOptions));
 app.use(flash());
 
+// Passport config
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.use(new LocalStrategy(User.authenticate()));  // Comes from passport-local-mongoose
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
 app.use((req,res,next)=>{
     res.locals.success=req.flash("success");
     res.locals.error=req.flash("error");
     next();
 })
 
+app.get("/demouser",async (req,res)=>{
+    let fakeUser=new User({
+        email:"123@gmail.com",
+        username:"delta-student"
+    });
+    let registeredUser=await User.register(fakeUser,"helloworld");
+    res.send(registeredUser);
+
+})
 
 
 
-app.use("/listings",listings)
+//listings
+app.use("/listings",listingRouter)
 //Reviews
-app.use("/listings/:id/reviews",reviews)
+app.use("/listings/:id/reviews",reviewRouter)
+// /users
+app.use("/",userRouter);
 
 
 
