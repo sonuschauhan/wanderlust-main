@@ -55,4 +55,19 @@ router.get("/logout", (req, res) => {
     })
 })
 
+router.get("/auth/google",
+    passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+router.get("/auth/google/callback",
+    passport.authenticate("google", { failureRedirect: "/login", failureFlash: true }),
+    (req, res) => {
+        req.flash("success", "Logged in with Google!");
+        const redirectUrl = req.session.redirectUrl || "/listings";
+        delete req.session.redirectUrl;
+        res.redirect(redirectUrl);
+    }
+);
+
+
 module.exports = router;

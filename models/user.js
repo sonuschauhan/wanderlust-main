@@ -6,8 +6,12 @@ const passportLocalMongoose = require('passport-local-mongoose');
 const userSchema=new Schema({
     email:{
         type:String,
-        required:true
-    }
+        required:false,
+        username:String,
+        googleId: String,
+        profilePic: String
+    },
+
 });
 
 userSchema.plugin(passportLocalMongoose);

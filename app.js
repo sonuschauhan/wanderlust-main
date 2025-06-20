@@ -1,3 +1,4 @@
+require("dotenv").config();  
 const express = require("express");
 const app= express();
 const mongoose=require("mongoose");
@@ -11,6 +12,7 @@ const session = require('express-session');
 const flash = require('connect-flash');
 const passport=require("passport");
 const LocalStrategy =require("passport-local");
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User=require("./models/user");
 
 const listingRouter= require("./routes/listing");
@@ -60,6 +62,30 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 passport.use(new LocalStrategy(User.authenticate()));  // Comes from passport-local-mongoose
+
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,        // or paste directly
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: "/auth/google/callback"
+},
+async (accessToken, refreshToken, profile, done) => {
+    try {
+        let existingUser = await User.findOne({ googleId: profile.id });
+        if (existingUser) return done(null, existingUser);
+
+        let newUser = new User({
+            googleId: profile.id,
+            username: profile.displayName,
+            profilePic: profile.photos[0].value
+        });
+
+        await newUser.save();
+        done(null, newUser);
+    } catch (err) {
+        done(err, null);
+    }
+}));
+
 
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
