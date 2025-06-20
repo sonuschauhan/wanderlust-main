@@ -1,14 +1,11 @@
 const express = require("express");
 const app= express();
 const mongoose=require("mongoose");
-const Listing=require("./models/listing")
-const Review=require("./models/review");
 const path=require("path");
 const methodOverride=require("method-override");
 const ejsMate=require("ejs-mate");
-const wrapAsync =require("./utils/wrapAsync");
 const ExpressError=require("./utils/ExpressError");
-const {listingSchema,reviewSchema}=require("./schema")
+
 
 const session = require('express-session');
 const flash = require('connect-flash');
@@ -70,6 +67,7 @@ passport.deserializeUser(User.deserializeUser());
 app.use((req,res,next)=>{
     res.locals.success=req.flash("success");
     res.locals.error=req.flash("error");
+    res.locals.currUser=req.user;
     next();
 })
 
@@ -98,7 +96,7 @@ app.use("/",userRouter);
 app.all('/*splat', (req, res, next) => {
     next(new ExpressError(404, "Page Not Found"));
 });
-//Error handling middlewares
+// Error handling middlewares
 app.use((err,req,res,next)=>{
     let {statusCode=500,message="something went wrong!"}=err;
     res.status(statusCode).render("error.ejs",{message});
