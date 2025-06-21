@@ -97,3 +97,6 @@ body{
     display: flex;
     gap: 1rem;
 }
+#map{
+    border-radius: 15px;
+}

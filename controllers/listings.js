@@ -1,4 +1,5 @@
 const Listing=require("../models/listing");
+const axios = require("axios");
 module.exports.index=async (req,res)=>{
     const allListings=await Listing.find();
     // console.log(allListings);
@@ -29,16 +30,49 @@ module.exports.showListing=async(req,res)=>{
     
 }
 
-module.exports.createListing=async(req,res,next)=>{
-   
-    const newListing= Listing(req.body.listing);
-    console.log(req.user);
-    newListing.owner=req.user._id;
-    await newListing.save();
-    req.flash("success","New Listing Created!")
+module.exports.createListing = async (req, res, next) => {
+  try {
+    const { listing } = req.body;
+
+    // Geocode location using OpenStreetMap's Nominatim
+    const geoData = await axios.get('https://nominatim.openstreetmap.org/search', {
+      params: {
+        q: listing.location,
+        format: 'json',
+        limit: 1
+      },
+      headers: {
+        'User-Agent': 'Wanderlust-App' // Required by Nominatim usage policy
+      }
+    });
+
+    if (!geoData.data.length) {
+      req.flash("error", "Location not found. Please enter a valid location.");
+      return res.redirect("/listings/new");
+    }
+
+    const coordinates = [
+      parseFloat(geoData.data[0].lon),
+      parseFloat(geoData.data[0].lat)
+    ];
+
+    const newListing = new Listing({
+      ...listing,
+      owner: req.user._id,
+      locationCoordinate: {
+        type: "Point",
+        coordinates: coordinates
+      }
+    });
+
+    const result=await newListing.save();
+    console.log(result);
+    req.flash("success", "New Listing Created!");
     res.redirect("/listings");
-   
-}
+  } catch (err) {
+    next(err);
+  }
+};
 
 module.exports.renderEditForm=async(req,res)=>{
     let {id}=req.params;

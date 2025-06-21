@@ -1,0 +1,25 @@
+<% layout('layouts/boilerplate') -%>
+
+<div class="container mt-5">
+  <h2 class="mb-3">Test Map</h2>
+  <div id="map" style="height: 400px;"></div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Dummy coordinates: India Gate, Delhi
+    const lat = 28.6129;
+    const lng = 77.2295;
+
+    const map = L.map('map').setView([lat, lng], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    L.marker([lat, lng])
+      .addTo(map)
+      .bindPopup('Testing Map: India Gate')
+      .openPopup();
+  });
+</script>

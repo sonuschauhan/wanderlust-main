@@ -19,6 +19,9 @@ const listingRouter= require("./routes/listing");
 const reviewRouter= require("./routes/review");
 const userRouter=require("./routes/user")
 
+const testRoutes = require("./routes/test");
+
+
 
 
 
@@ -94,6 +97,7 @@ app.use((req,res,next)=>{
     res.locals.success=req.flash("success");
     res.locals.error=req.flash("error");
     res.locals.currUser=req.user;
+    res.locals.googleMapsKey = process.env.GOOGLE_GEOCODE_KEY;
     next();
 })
 
@@ -115,6 +119,9 @@ app.use("/listings",listingRouter)
 app.use("/listings/:id/reviews",reviewRouter)
 // /users
 app.use("/",userRouter);
+
+
+app.use("/", testRoutes);
 
 
 

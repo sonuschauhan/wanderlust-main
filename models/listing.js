@@ -30,7 +30,18 @@ const listingSchema = new Schema({
     owner : {
         type:Schema.Types.ObjectId,
         ref:"User"
+    },
+     locationCoordinate: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number], // [longitude, latitude]
+      required: true
     }
+  }
 });
 listingSchema.post("findOneAndDelete",async(listing)=>{
     if(listing){
